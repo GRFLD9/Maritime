@@ -1,36 +1,49 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <link rel="stylesheet"
-          href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
-          integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh"
-          crossorigin="anonymous">
-    <link rel="stylesheet" href="/static/css/style.css">
-    {% block styles %}{% endblock %}
-    <title>{{ title }}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Maritime Resort</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 </head>
 <body>
-<header>
-    <nav class="navbar navbar-light bg-light">
-        <h1>Maritime</h1>
-        {% if current_user.is_authenticated %}
-        <p>
-            <a class="navbar-brand" href="/logout">{{ current_user.name }} {{ current_user.surname }}</a>
-        </p>
-        {% else %}
-        <p>
-            <a class="btn btn-primary " href="/register">Register</a>
-            <a class="btn btn-success" href="/login">Login</a>
-        </p>
-        {% endif %}
-        <a class="navbar-brand">Maritime</a>
+    <div class="p-3 mb-2 bg-info text-dark"><h1>Maritime<h1></div>
+    <nav class="navbar navbar-expand-lg bg-body-tertiary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="">Навигация</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link {{ 'active' if active_page == 'main' }}" href="{{ url_for('user_views.main') }}">Главная</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ 'active' if active_page == 'rooms' }}" href="{{ url_for('user_views.rooms') }}">Номера</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ 'active' if active_page == 'routers' }}" href="#">Маршруты</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ 'active' if active_page == 'pro' }}" href="#">Контакты</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
     </nav>
-    <h4>База отдыха Maritime</h4>
-</header>
-<main role="main" class="container">
+
     {% block content %}{% endblock %}
-</main>
+
+    <div class="p-3 mb-2 bg-dark text-white">
+        <h1>Адрес:</h1>
+        <h>Город Владивосток, район "Крутой"<h><br>
+        <a href="https://instagram.com/maritime_resort" target="_blank">
+            <i class="fab fa-instagram"></i> @maritime_resort
+        </a>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

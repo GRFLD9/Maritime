@@ -7,6 +7,7 @@ from flask_restful import Api
 from api.resources.user_resource import UserResource, UsersListResource, RegisterResource, LoginResource
 from db.database import global_init
 from db.repositories.user_repo import UserRepository
+from blueprints.user_views import user_blueprint
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -26,7 +27,7 @@ def create_app(config_object=None):
     app.secret_key = app.config.get("SECRET_KEY", "fallback")
 
     login_manager = LoginManager(app)
-    login_manager.login_view = 'login'
+    login_manager.login_view = 'user_views.login'
 
     @login_manager.user_loader
     def load_user(user_id):
@@ -37,7 +38,7 @@ def create_app(config_object=None):
     api.add_resource(UserResource, '/api/users/<int:user_id>')
     api.add_resource(RegisterResource, '/register')
     api.add_resource(LoginResource, '/login')
-
+    app.register_blueprint(user_blueprint)
     return app
 
 
