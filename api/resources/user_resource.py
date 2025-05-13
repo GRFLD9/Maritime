@@ -1,7 +1,11 @@
+from flask import request
+from flask_jwt_extended import create_access_token
 from flask_restful import Resource
-from services.user_service import UserService
-from exceptions import UserNotFoundError, ValidationError
+
 from api.parsers.user_parser import create_parser, update_parser
+from exceptions import UserNotFoundError, ValidationError
+from services.user_service import UserService
+
 
 class UserResource(Resource):
     def get(self, user_id):
@@ -30,6 +34,7 @@ class UserResource(Resource):
         except UserNotFoundError as e:
             return {"error": str(e)}, 404
 
+
 class UsersListResource(Resource):
     def get(self):
         """Получить всех пользователей"""
@@ -44,3 +49,30 @@ class UsersListResource(Resource):
             return user, 201
         except ValidationError as e:
             return {"error": str(e)}, 400
+
+
+class RegisterResource(Resource):
+    def post(self):
+        try:
+            args = create_parser.parse_args()
+            user = UserService.register_user(args)
+            return user, 201
+        except ValidationError as e:
+            return {"error": str(e)}, 400
+
+
+class LoginResource(Resource):
+    def post(self):
+        data = request.get_json()
+        identifier = data.get("email") or data.get("phone")
+        password = data.get("password")
+
+        if not identifier or not password:
+            return {"error": "Email или телефон и пароль обязательны"}, 400
+
+        try:
+            user = UserService.authenticate_user(identifier, password)
+            access_token = create_access_token(identity=user["id"])
+            return {"access_token": access_token}, 200
+        except ValidationError as e:
+            return {"error": str(e)}, 401

@@ -1,9 +1,10 @@
 import logging
+
 from flask import Flask
 from flask_login import LoginManager
 from flask_restful import Api
 
-from api.resources.user_resource import UserResource, UsersListResource
+from api.resources.user_resource import UserResource, UsersListResource, RegisterResource, LoginResource
 from db.database import global_init
 from db.repositories.user_repo import UserRepository
 
@@ -34,6 +35,8 @@ def create_app(config_object=None):
     api = Api(app)
     api.add_resource(UsersListResource, '/api/users')
     api.add_resource(UserResource, '/api/users/<int:user_id>')
+    api.add_resource(RegisterResource, '/register')
+    api.add_resource(LoginResource, '/login')
 
     return app
 

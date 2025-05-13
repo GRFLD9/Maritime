@@ -1,5 +1,8 @@
 from datetime import date
+
 from dateutil.relativedelta import relativedelta
+from werkzeug.security import generate_password_hash, check_password_hash
+
 from db.repositories.user_repo import UserRepository
 from exceptions import UserNotFoundError, ValidationError
 
@@ -13,8 +16,8 @@ class UserService:
             raise ValidationError("Телефон должен начинаться с +")
 
         # Валидация пароля (только при создании или явном обновлении)
-        if not is_update or 'password_hash' in data:
-            if len(data.get('password_hash', '')) < 8:
+        if not is_update or 'password' in data:
+            if len(data.get('password', '')) < 8:
                 raise ValidationError("Пароль должен быть минимум 8 символов")
 
         # Валидация даты рождения
@@ -46,6 +49,7 @@ class UserService:
     @staticmethod
     def create_user(data: dict) -> dict:
         UserService.validate_user_data(data)
+        data["password_hash"] = generate_password_hash(data.pop("password"))
         return UserRepository.create_user(data)
 
     @staticmethod
@@ -61,3 +65,20 @@ class UserService:
         if not UserRepository.delete_user(user_id):
             raise UserNotFoundError(f"Пользователь {user_id} не найден")
         return True
+
+    @staticmethod
+    def register_user(data: dict) -> dict:
+        UserService.validate_user_data(data)
+        data["password_hash"] = generate_password_hash(data["password_hash"])
+        return UserRepository.create_user(data)
+
+    @staticmethod
+    def authenticate_user(identifier: str, password: str) -> dict:
+        user = UserRepository.get_by_email_or_phone(identifier)
+        if not user:
+            raise ValidationError("Пользователь не найден")
+
+        if not check_password_hash(user["password_hash"], password):
+            raise ValidationError("Неверный пароль")
+
+        return user

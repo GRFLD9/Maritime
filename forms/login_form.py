@@ -13,7 +13,8 @@ class LoginForm(FlaskForm):
     password = PasswordField('Пароль', validators=[DataRequired()])
     remember_me = BooleanField('Запомнить меня')
 
-    def validate_login_identifier(self, field):
+    @staticmethod
+    def validate_login_identifier(field):
         value = field.data.strip()
 
         if '@' in value:

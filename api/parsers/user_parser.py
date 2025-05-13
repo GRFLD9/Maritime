@@ -10,7 +10,7 @@ def parse_date(date_str):
 create_parser = reqparse.RequestParser()
 create_parser.add_argument('email', required=True, type=str, help='Email обязателен')
 create_parser.add_argument('phone', required=True, type=str, help='Телефон обязателен')
-create_parser.add_argument('password_hash', required=True, type=str, help='Хэш пароля обязателен')
+create_parser.add_argument('password', required=True, type=str, help='Пароль обязателен')  # изменено
 create_parser.add_argument('name', required=True, type=str, help='Имя обязательно')
 create_parser.add_argument('surname', required=True, type=str, help='Фамилия обязательна')
 create_parser.add_argument('birth_date', type=parse_date, required=True, help='Дата рождения обязательна (ДД.ММ.ГГГГ)')

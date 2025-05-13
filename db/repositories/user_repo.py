@@ -1,7 +1,8 @@
 from sqlalchemy.exc import IntegrityError
-from models.users import User
+
 from db.database import create_session
 from exceptions import ValidationError
+from models.users import User
 
 
 class UserRepository:
@@ -60,3 +61,12 @@ class UserRepository:
         with create_session() as session:
             users = session.query(User).all()
             return [UserRepository._serialize_user(u) for u in users]
+
+    @staticmethod
+    def get_by_email_or_phone(identifier: str) -> dict | None:
+        with create_session() as session:
+            user = session.query(User).filter(
+                (User.email == identifier) | (User.phone == identifier)
+            ).first()
+            return UserRepository._serialize_user(user) if user else None
+
