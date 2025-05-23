@@ -28,3 +28,7 @@ Thumbs.db
 
 /media/
 /static/uploads/
+
+alembic.ini
+create_manager.py
+init_test_data.py

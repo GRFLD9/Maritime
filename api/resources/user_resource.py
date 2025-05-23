@@ -1,6 +1,7 @@
 from flask import request
-from flask_jwt_extended import create_access_token
+from flask_jwt_extended import create_access_token, jwt_required
 from flask_restful import Resource
+from utils.decorators import jwt_role_required
 
 from api.parsers.user_parser import create_parser, update_parser
 from exceptions import UserNotFoundError, ValidationError
@@ -8,6 +9,8 @@ from services.user_service import UserService
 
 
 class UserResource(Resource):
+    @jwt_required()
+    @jwt_role_required('admin')
     def get(self, user_id):
         """Получить пользователя по ID"""
         try:
@@ -16,6 +19,8 @@ class UserResource(Resource):
         except UserNotFoundError as e:
             return {"error": str(e)}, 404
 
+    @jwt_required()
+    @jwt_role_required('admin')
     def put(self, user_id):
         """Обновить пользователя"""
         try:
@@ -26,6 +31,8 @@ class UserResource(Resource):
         except (UserNotFoundError, ValidationError) as e:
             return {"error": str(e)}, 400
 
+    @jwt_required()
+    @jwt_role_required('admin')
     def delete(self, user_id):
         """Удалить пользователя"""
         try:
@@ -36,6 +43,8 @@ class UserResource(Resource):
 
 
 class UsersListResource(Resource):
+    @jwt_required()
+    @jwt_role_required('admin')
     def get(self):
         """Получить всех пользователей"""
         users = UserService.get_all_users()

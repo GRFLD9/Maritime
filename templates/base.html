@@ -21,7 +21,7 @@
                         <a class="nav-link {{ 'active' if active_page == 'main' }}" href="{{ url_for('user_views.main') }}">Главная</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {{ 'active' if active_page == 'rooms' }}" href="{{ url_for('user_views.rooms') }}">Номера</a>
+                        <a class="nav-link {{ 'active' if active_page == 'rooms' }}" href="{{ url_for('booking.room_list') }}">Номера</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link {{ 'active' if active_page == 'routers' }}" href="#">Маршруты</a>

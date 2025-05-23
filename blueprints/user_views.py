@@ -89,8 +89,3 @@ def profile():
 @role_required('admin')  # Только для админа
 def admin_dashboard():
     return render_template("admin_dashboard.html")
-
-
-@user_blueprint.route('/rooms')
-def rooms():
-    return render_template('rooms.html', active_page='rooms')

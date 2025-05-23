@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-8">
+            <div id="roomCarousel" class="carousel slide mb-4" data-bs-ride="carousel">
+                <div class="carousel-inner">
+                    {% for image in room.images %}
+                    <div class="carousel-item {% if loop.first %}active{% endif %}">
+                        <img src="{{ image.image_url }}" class="d-block w-100" style="height: 400px; object-fit: cover;">
+                    </div>
+                    {% endfor %}
+                </div>
+                <button class="carousel-control-prev" type="button" data-bs-target="#roomCarousel" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon"></span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#roomCarousel" data-bs-slide="next">
+                    <span class="carousel-control-next-icon"></span>
+                </button>
+            </div>
+
+            <h2>{{ room.name }}</h2>
+            <p>{{ room.description }}</p>
+            
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5>Удобства</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for amenity in room.amenities %}
+                        <div class="col-md-4 mb-2">
+                            <i class="fas fa-check text-success"></i> {{ amenity.name }}
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm sticky-top" style="top: 20px;">
+                <div class="card-body">
+                    <h4 class="card-title">Бронирование</h4>
+                    <form id="booking-details-form">
+                        <div class="mb-3">
+                            <label for="details-check_in" class="form-label">Заезд</label>
+                            <input type="date" class="form-control" id="details-check_in" name="check_in" 
+                                   value="{{ check_in or '' }}" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="details-check_out" class="form-label">Выезд</label>
+                            <input type="date" class="form-control" id="details-check_out" name="check_out"
+                                   value="{{ check_out or '' }}" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="details-guests" class="form-label">Гости</label>
+                            <select class="form-select" id="details-guests" name="guests">
+                                {% for i in range(1, room.capacity + 1) %}
+                                <option value="{{ i }}" {% if (guests|default(2)) == i %}selected{% endif %}>{{ i }} {{ 'гость' if i == 1 else 'гостя' if i < 5 else 'гостей' }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="alert alert-info {% if is_available %}d-none{% endif %}" id="availability-alert">
+                            Номер недоступен на выбранные даты
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <a href="{{ url_for('booking.book_room', room_id=room.id, 
+                                               check_in=check_in, check_out=check_out, 
+                                               guests=guests|default(2)) }}" 
+                               class="btn btn-primary {% if not is_available %}disabled{% endif %}" 
+                               id="book-button">
+                                Забронировать за {{ room.price_per_night * ((check_out|string_to_date) - (check_in|string_to_date)).days if check_in and check_out else room.price_per_night }} ₽
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const checkIn = flatpickr("#details-check_in", {
+        dateFormat: "Y-m-d",
+        minDate: "today",
+        onChange: updateBookingDetails
+    });
+
+    const checkOut = flatpickr("#details-check_out", {
+        dateFormat: "Y-m-d",
+        minDate: new Date().fp_incr(1),
+        onChange: updateBookingDetails
+    });
+
+    document.getElementById("details-guests").addEventListener("change", updateBookingDetails);
+
+    function updateBookingDetails() {
+        const form = document.getElementById("booking-details-form");
+        const formData = new FormData(form);
+        const params = new URLSearchParams(formData).toString();
+        
+        fetch(`/api/rooms/{{ room.id }}/availability?${params}`)
+            .then(response => response.json())
+            .then(data => {
+                const alert = document.getElementById("availability-alert");
+                const bookButton = document.getElementById("book-button");
+                
+                if (data.available) {
+                    alert.classList.add("d-none");
+                    bookButton.classList.remove("disabled");
+                    bookButton.href = `/book/{{ room.id }}?${params}`;
+                    bookButton.textContent = `Забронировать за ${data.total_price} ₽`;
+                } else {
+                    alert.classList.remove("d-none");
+                    bookButton.classList.add("disabled");
+                }
+            });
+    }
+});
+</script>
+{% endblock %}

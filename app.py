@@ -8,6 +8,8 @@ from api.resources.user_resource import UserResource, UsersListResource, Registe
 from db.database import global_init
 from db.repositories.user_repo import UserRepository
 from blueprints.user_views import user_blueprint
+from blueprints.booking_views import booking_blueprint
+
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -39,6 +41,7 @@ def create_app(config_object=None):
     api.add_resource(RegisterResource, '/register')
     api.add_resource(LoginResource, '/login')
     app.register_blueprint(user_blueprint)
+    app.register_blueprint(booking_blueprint)
     return app
 
 
