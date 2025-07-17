@@ -25,6 +25,10 @@ class User(SqlAlchemyBase, UserMixin, SerializerMixin):
     def get_serialize_rules(cls):
         return cls.SERIALIZE_RULES
 
+    @property
+    def full_name(self):
+        return f"{self.name} {self.surname}".strip()
+
     id = Column(Integer, primary_key=True, autoincrement=True)
     email = Column(String, unique=True, nullable=False)
     phone = Column(String, unique=True, nullable=False)

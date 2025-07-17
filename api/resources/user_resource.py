@@ -3,7 +3,7 @@ from flask_jwt_extended import create_access_token, jwt_required
 from flask_restful import Resource
 from utils.decorators import jwt_role_required
 
-from api.parsers.user_parser import create_parser, update_parser
+from api.parsers.user_parser import create_parser, update_parser, login_parser
 from exceptions import UserNotFoundError, ValidationError
 from services.user_service import UserService
 
@@ -64,7 +64,7 @@ class RegisterResource(Resource):
     def post(self):
         try:
             args = create_parser.parse_args()
-            user = UserService.register_user(args)
+            user = UserService.create_user(args)
             return user, 201
         except ValidationError as e:
             return {"error": str(e)}, 400
@@ -72,16 +72,16 @@ class RegisterResource(Resource):
 
 class LoginResource(Resource):
     def post(self):
-        data = request.get_json()
-        identifier = data.get("email") or data.get("phone")
-        password = data.get("password")
+        args = login_parser.parse_args()
+        identifier = args.get("email") or args.get("phone")
+        password = args.get("password")
 
         if not identifier or not password:
             return {"error": "Email или телефон и пароль обязательны"}, 400
 
         try:
             user = UserService.authenticate_user(identifier, password)
-            access_token = create_access_token(identity=user["id"])
+            access_token = create_access_token(identity=str(user["id"]))
             return {"access_token": access_token}, 200
         except ValidationError as e:
             return {"error": str(e)}, 401

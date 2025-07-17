@@ -25,11 +25,11 @@ class BookingService:
             raise ValidationError(f"Комната {room_id} не найдена")
 
     @staticmethod
-    def get_booking_by_id(booking_id: int):
-        booking = BookingRepository.get_booking_by_id(booking_id)
-        if not booking:
+    def get_booking_by_id(booking_id: int) -> dict:
+        booking_dict = BookingRepository.get_booking_by_id(booking_id)
+        if not booking_dict:
             raise ValidationError(f"Бронирование {booking_id} не найдено")
-        return booking
+        return booking_dict
 
     @staticmethod
     def get_user_bookings(user_id: int):
@@ -54,3 +54,30 @@ class BookingService:
         if not BookingRepository.delete_booking_by_user(user_id, booking_id):
             raise ValidationError(f"Бронирование {booking_id} не найдено или нет доступа")
         return True
+
+    @staticmethod
+    def update_booking(user_id: int, booking_id: int, update_data: dict) -> dict:
+        booking = BookingRepository.get_booking_by_id(booking_id)
+        if not booking or booking["user_id"] != user_id:
+            raise ValidationError(f"Бронирование {booking_id} не найдено или доступ запрещён")
+
+        full_data = {
+            "user_id": booking["user_id"],
+            "room_id": booking["room_id"],
+            "check_in": booking["check_in"],
+            "check_out": booking["check_out"],
+            "notes": booking["notes"],
+            "status": booking["status"],
+            "guests": booking["guests"],
+            "guest_name": booking["guest_name"],
+            "guest_phone": booking["guest_phone"],
+            "guest_email": booking["guest_email"],
+        }
+        full_data.update({k: v for k, v in update_data.items() if v is not None})
+
+        BookingService.validate_booking_data(full_data)
+
+        updated = BookingRepository.update_booking_by_user(user_id, booking_id, update_data)
+        if not updated:
+            raise ValidationError(f"Не удалось обновить бронирование {booking_id}")
+        return updated

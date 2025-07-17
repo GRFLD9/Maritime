@@ -3,6 +3,7 @@
 {% block content %}
 <div class="container">
     <div class="row">
+        <!-- Форма бронирования -->
         <div class="col-md-7">
             <div class="card mb-4">
                 <div class="card-header bg-primary text-white">
@@ -12,9 +13,10 @@
                     <form method="post" novalidate>
                         {{ form.hidden_tag() }}
 
+                        {% if not current_user.is_authenticated %}
                         <div class="mb-3">
                             {{ form.guest_name.label(class="form-label") }}
-                            {{ form.guest_name(class="form-control") }}
+                            {{ form.guest_name(class="form-control", placeholder="Иван Иванов") }}
                             {% for error in form.guest_name.errors %}
                             <div class="invalid-feedback d-block">{{ error }}</div>
                             {% endfor %}
@@ -22,7 +24,7 @@
 
                         <div class="mb-3">
                             {{ form.guest_phone.label(class="form-label") }}
-                            {{ form.guest_phone(class="form-control") }}
+                            {{ form.guest_phone(class="form-control", placeholder="+7 (900) 123-45-67") }}
                             {% for error in form.guest_phone.errors %}
                             <div class="invalid-feedback d-block">{{ error }}</div>
                             {% endfor %}
@@ -30,8 +32,17 @@
 
                         <div class="mb-3">
                             {{ form.guest_email.label(class="form-label") }}
-                            {{ form.guest_email(class="form-control") }}
+                            {{ form.guest_email(class="form-control", placeholder="example@mail.com") }}
                             {% for error in form.guest_email.errors %}
+                            <div class="invalid-feedback d-block">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+
+                        <div class="mb-3">
+                            {{ form.notes.label(class="form-label") }}
+                            {{ form.notes(class="form-control", rows="3", placeholder="Дополнительные пожелания") }}
+                            {% for error in form.notes.errors %}
                             <div class="invalid-feedback d-block">{{ error }}</div>
                             {% endfor %}
                         </div>
@@ -52,6 +63,7 @@
             </div>
         </div>
 
+        <!-- Информация о бронировании -->
         <div class="col-md-5">
             <div class="card shadow-sm sticky-top" style="top: 20px;">
                 <div class="card-header bg-light">
@@ -59,27 +71,43 @@
                 </div>
                 <div class="card-body">
                     <h5>{{ room.name }}</h5>
+
                     <p class="text-muted mb-2">
                         <i class="far fa-calendar-alt me-2"></i>
-                        {{ form.check_in.data.strftime('%d.%m.%Y') }} - {{ form.check_out.data.strftime('%d.%m.%Y') }}
-                        ({{ (form.check_out.data - form.check_in.data).days }} ночей)
+                        {% if form.check_in.data and form.check_out.data %}
+                            {{ form.check_in.data.strftime('%d.%m.%Y') }} - {{ form.check_out.data.strftime('%d.%m.%Y') }}
+                            ({{ (form.check_out.data - form.check_in.data).days }} ночей)
+                        {% else %}
+                            Даты не выбраны
+                        {% endif %}
                     </p>
+
                     <p class="text-muted mb-2">
                         <i class="fas fa-user-friends me-2"></i>
-                        {{ form.guests.data }} {{ 'гость' if form.guests.data == 1 else 'гостя' if form.guests.data < 5 else 'гостей' }}
+                        {% if form.guests.data %}
+                            {{ form.guests.data }} {{ 'гость' if form.guests.data == 1 else 'гостя' if form.guests.data < 5 else 'гостей' }}
+                        {% else %}
+                            Кол-во гостей не указано
+                        {% endif %}
                     </p>
+
                     <hr>
 
-                    <h5 class="mb-3">Итого к оплате</h5>
-                    <div class="d-flex justify-content-between mb-2">
-                        <span>{{ room.price_per_night }} ₽ × {{ (form.check_out.data - form.check_in.data).days }} ночей</span>
-                        <span>{{ room.price_per_night * (form.check_out.data - form.check_in.data).days }} ₽</span>
-                    </div>
+                    {% if form.check_in.data and form.check_out.data %}
+                        {% set nights = (form.check_out.data - form.check_in.data).days %}
+                        <h5 class="mb-3">Итого к оплате</h5>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>{{ room.price_per_night }} ₽ × {{ nights }} ночей</span>
+                            <span>{{ room.price_per_night * nights }} ₽</span>
+                        </div>
 
-                    <div class="d-flex justify-content-between fw-bold fs-5 mt-3">
-                        <span>Всего</span>
-                        <span>{{ room.price_per_night * (form.check_out.data - form.check_in.data).days }} ₽</span>
-                    </div>
+                        <div class="d-flex justify-content-between fw-bold fs-5 mt-3">
+                            <span>Всего</span>
+                            <span>{{ room.price_per_night * nights }} ₽</span>
+                        </div>
+                    {% else %}
+                        <p class="text-danger">Укажите даты, чтобы рассчитать итоговую сумму.</p>
+                    {% endif %}
                 </div>
             </div>
         </div>

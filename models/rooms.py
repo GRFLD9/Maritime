@@ -1,9 +1,10 @@
 from sqlalchemy import Column, String, Integer, Float, ForeignKey
 from sqlalchemy.orm import relationship
 from db.database import SqlAlchemyBase
+from sqlalchemy_serializer import SerializerMixin
 
 
-class Room(SqlAlchemyBase):
+class Room(SqlAlchemyBase, SerializerMixin):
     """Модель номера в базе отдыха"""
 
     __tablename__ = 'rooms'
@@ -18,3 +19,4 @@ class Room(SqlAlchemyBase):
     bookings = relationship("Booking", back_populates="room")
 
     images = relationship("RoomImage", back_populates="room")
+    serialize_rules = ('-bookings', 'images')

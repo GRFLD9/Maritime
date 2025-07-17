@@ -1,7 +1,8 @@
-from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, BooleanField
-from wtforms.validators import DataRequired, ValidationError
 import re
+
+from flask_wtf import FlaskForm
+from wtforms import StringField, PasswordField, BooleanField, SubmitField
+from wtforms.validators import DataRequired, ValidationError
 
 
 class LoginForm(FlaskForm):
@@ -12,9 +13,9 @@ class LoginForm(FlaskForm):
     )
     password = PasswordField('Пароль', validators=[DataRequired()])
     remember_me = BooleanField('Запомнить меня')
+    submit = SubmitField('Login')
 
-    @staticmethod
-    def validate_login_identifier(field):
+    def validate_login_identifier(self, field):
         value = field.data.strip()
 
         if '@' in value:

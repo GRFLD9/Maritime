@@ -1,12 +1,46 @@
 {% extends "base.html" %}
 {% block title %}Вход{% endblock %}
+
 {% block content %}
-<h2>Вход</h2>
-<form method="post">
+<div class="container mt-5" style="max-width: 500px;">
+  <h1 class="mb-4">Вход</h1>
+
+  {# Flash‑сообщения #}
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, msg in messages %}
+        <div class="alert alert-{{ 'success' if category == 'success' else 'danger' }}">
+          {{ msg }}
+        </div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+
+  <form method="post">
     {{ form.hidden_tag() }}
-    {{ form.login_identifier.label }} {{ form.login_identifier(size=32) }}<br>
-    {{ form.password.label }} {{ form.password(size=32) }}<br>
-    {{ form.remember_me() }} {{ form.remember_me.label }}<br>
-    {{ form.submit(class="btn btn-primary") }}
-</form>
+
+    <div class="mb-3">
+      {{ form.login_identifier.label(class="form-label") }}
+      {{ form.login_identifier(class="form-control", placeholder="Email или телефон") }}
+      {% for err in form.login_identifier.errors %}
+        <div class="text-danger small">{{ err }}</div>
+      {% endfor %}
+    </div>
+
+    <div class="mb-3">
+      {{ form.password.label(class="form-label") }}
+      {{ form.password(class="form-control", placeholder="Пароль") }}
+      {% for err in form.password.errors %}
+        <div class="text-danger small">{{ err }}</div>
+      {% endfor %}
+    </div>
+
+    <div class="form-check mb-3">
+      {{ form.remember_me(class="form-check-input", id="rememberMe") }}
+      {{ form.remember_me.label(class="form-check-label", for="rememberMe") }}
+    </div>
+
+    <button type="submit" class="btn btn-primary">{{ form.submit.label.text }}</button>
+  </form>
+</div>
 {% endblock %}

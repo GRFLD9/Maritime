@@ -1,9 +1,10 @@
 from sqlalchemy import Column, Integer, String, ForeignKey, Boolean
 from sqlalchemy.orm import relationship
 from db.database import SqlAlchemyBase
+from sqlalchemy_serializer import SerializerMixin
 
 
-class RoomImage(SqlAlchemyBase):
+class RoomImage(SqlAlchemyBase, SerializerMixin):
     """Модель для хранения фотографий номеров"""
 
     __tablename__ = 'room_images'
@@ -14,3 +15,4 @@ class RoomImage(SqlAlchemyBase):
     is_primary = Column(Boolean, default=False)
 
     room = relationship("Room", back_populates="images")
+    serialize_rules = ('-room',)

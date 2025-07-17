@@ -1,11 +1,14 @@
-from flask_restful import reqparse
 from datetime import datetime
+
+from flask_restful import reqparse
+
 
 def parse_date(date_str):
     try:
         return datetime.strptime(date_str, '%d.%m.%Y').date()
     except ValueError:
         raise ValueError("Неверный формат даты. Используйте ДД.ММ.ГГГГ")
+
 
 create_parser = reqparse.RequestParser()
 create_parser.add_argument('email', required=True, type=str, help='Email обязателен')
@@ -27,3 +30,8 @@ update_parser.add_argument('birth_date', type=parse_date, required=False)
 update_parser.add_argument('city_from', type=str, required=False)
 update_parser.add_argument('is_verified', type=bool, required=False)
 update_parser.add_argument('role', type=str, required=False)
+
+login_parser = reqparse.RequestParser()
+login_parser.add_argument('email', type=str, required=False, location='json')
+login_parser.add_argument('phone', type=str, required=False, location='json')
+login_parser.add_argument('password', type=str, required=True, location='json')

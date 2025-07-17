@@ -9,24 +9,19 @@ from exceptions import UserNotFoundError, ValidationError
 
 class UserService:
     @staticmethod
-    def validate_user_data(data: dict, is_update: bool = False):
-        """Валидация данных пользователя"""
-        # Валидация телефона
+    def validate_user_data(data: dict):
         if 'phone' in data and not data['phone'].startswith('+'):
             raise ValidationError("Телефон должен начинаться с +")
 
-        # Валидация пароля (только при создании или явном обновлении)
-        if not is_update or 'password' in data:
+        if 'password' in data:
             if len(data.get('password', '')) < 8:
                 raise ValidationError("Пароль должен быть минимум 8 символов")
 
-        # Валидация даты рождения
         if 'birth_date' in data:
             UserService._validate_birth_date(data['birth_date'])
 
     @staticmethod
     def _validate_birth_date(value: date) -> None:
-        """Проверка возраста (18+)"""
         if not value:
             raise ValidationError("Дата рождения обязательна")
 
@@ -34,7 +29,6 @@ class UserService:
         if age < 18:
             raise ValidationError("Пользователь должен быть старше 18 лет")
 
-    # CRUD методы
     @staticmethod
     def get_user(user_id: int) -> dict:
         user = UserRepository.get_by_id(user_id)
@@ -67,18 +61,13 @@ class UserService:
         return True
 
     @staticmethod
-    def register_user(data: dict) -> dict:
-        UserService.validate_user_data(data)
-        data["password_hash"] = generate_password_hash(data["password_hash"])
-        return UserRepository.create_user(data)
-
-    @staticmethod
     def authenticate_user(identifier: str, password: str) -> dict:
-        user = UserRepository.get_by_email_or_phone(identifier)
-        if not user:
+        result = UserRepository.get_serialized_user_with_password_by_email_or_phone(identifier)
+        if not result:
             raise ValidationError("Пользователь не найден")
 
-        if not check_password_hash(user["password_hash"], password):
+        user_obj, user_dict = result
+        if not check_password_hash(user_obj.password_hash, password):
             raise ValidationError("Неверный пароль")
 
-        return user
+        return user_obj

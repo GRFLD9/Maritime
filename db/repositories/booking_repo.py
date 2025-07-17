@@ -9,7 +9,12 @@ class BookingRepository:
     @staticmethod
     def get_booking_by_id(booking_id):
         with create_session() as session:
-            return session.get(Booking, booking_id)
+            booking = (
+                session.query(Booking)
+                .options(joinedload(Booking.room))
+                .get(booking_id)
+            )
+            return booking.to_dict() if booking else None
 
     @staticmethod
     def delete_booking_by_user(user_id, booking_id):
@@ -50,7 +55,7 @@ class BookingRepository:
             session.add(booking)
             session.commit()
             session.refresh(booking)
-            return booking
+            return booking.to_dict()
 
     @staticmethod
     def get_booked_room_ids(check_in, check_out):
@@ -71,3 +76,22 @@ class BookingRepository:
                 .filter(Booking.user_id == user_id)
                 .all()
             )
+
+    @staticmethod
+    def update_booking_by_user(user_id: int, booking_id: int, data: dict):
+        with create_session() as session:
+            booking = (
+                session.query(Booking)
+                .filter_by(id=booking_id, user_id=user_id)
+                .first()
+            )
+            if not booking:
+                return None
+
+            for field in ("check_in", "check_out", "notes", "guests"):
+                if field in data and data[field] is not None:
+                    setattr(booking, field, data[field])
+
+            session.commit()
+            session.refresh(booking)
+            return booking.to_dict()

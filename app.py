@@ -3,13 +3,18 @@ import logging
 from flask import Flask
 from flask_login import LoginManager
 from flask_restful import Api
+from flask_jwt_extended import JWTManager
 
-from api.resources.user_resource import UserResource, UsersListResource, RegisterResource, LoginResource
+from api.resources.booking_resource import BookingResource, BookingListResource
+from api.resources.room_resource import RoomListResource, RoomDetailResource
+from api.resources.user_resource import (
+    UserResource, UsersListResource, RegisterResource, LoginResource
+)
 from db.database import global_init
 from db.repositories.user_repo import UserRepository
 from blueprints.user_views import user_blueprint
 from blueprints.booking_views import booking_blueprint
-
+from blueprints.room_views import room_blueprint
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -33,15 +38,26 @@ def create_app(config_object=None):
 
     @login_manager.user_loader
     def load_user(user_id):
-        return UserRepository.get_by_id(int(user_id))
+        return UserRepository.get_user_obj_by_id(int(user_id))
+
+    jwt = JWTManager(app)
 
     api = Api(app)
     api.add_resource(UsersListResource, '/api/users')
     api.add_resource(UserResource, '/api/users/<int:user_id>')
     api.add_resource(RegisterResource, '/register')
     api.add_resource(LoginResource, '/login')
+
+    api.add_resource(BookingListResource, '/api/bookings')
+    api.add_resource(BookingResource, '/api/bookings/<int:booking_id>')
+
+    api.add_resource(RoomListResource, '/api/rooms')
+    api.add_resource(RoomDetailResource, '/api/rooms/<int:room_id>')
+
     app.register_blueprint(user_blueprint)
     app.register_blueprint(booking_blueprint)
+    app.register_blueprint(room_blueprint)
+
     return app
 
 

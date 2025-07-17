@@ -14,14 +14,15 @@ def test_create_user_invalid_data(test_client):
 
 
 def test_user_authentication(test_client, test_user_data):
-    # Создаем пользователя
-    test_client.post('/api/users', json=test_user_data)
+    # Создание пользователя
+    response = test_client.post('/api/users', json=test_user_data)
+    assert response.status_code == 201
 
-    # Пытаемся авторизоваться
+    # Авторизация
     auth_data = {
         "email": test_user_data["email"],
-        "password": test_user_data["password_hash"]
+        "password": test_user_data["password"]
     }
-    response = test_client.post('/api/login', json=auth_data)
+    response = test_client.post('/login', json=auth_data)
     assert response.status_code == 200
     assert "access_token" in response.json

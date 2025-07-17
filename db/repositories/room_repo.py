@@ -16,12 +16,14 @@ class RoomRepository:
             return session.query(Room).options(joinedload(Room.images)).get(room_id)
 
     @staticmethod
-    def get_available_rooms(check_in, check_out):
+    def get_available_rooms(check_in, check_out, guests=None):
         with create_session() as session:
             booked_room_ids = BookingRepository.get_booked_room_ids(check_in, check_out)
             query = session.query(Room).options(joinedload(Room.images))
             if booked_room_ids:
                 query = query.filter(~Room.id.in_(booked_room_ids))
+            if guests:
+                query = query.filter(Room.capacity >= guests)
             return query.all()
 
     @staticmethod
@@ -30,7 +32,7 @@ class RoomRepository:
             room = Room(**room_data)
             session.add(room)
             session.commit()
-            return room
+            return room.to_dict()
 
     @staticmethod
     def delete_room(room_id):

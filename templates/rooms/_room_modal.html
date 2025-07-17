@@ -1,0 +1,51 @@
+<div class="modal-header">
+    <h5 class="modal-title">{{ room.name }}</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+</div>
+<div class="modal-body">
+    <div class="row">
+        <div class="col-12 mb-3">
+            {% if room.images %}
+                <div id="roomCarousel" class="carousel slide" data-bs-ride="carousel">
+                    <div class="carousel-inner">
+                        {% for img in room.images %}
+                            <div class="carousel-item {% if loop.first %}active{% endif %}">
+                                <img src="{{ img.image_url }}" class="d-block w-100" alt="...">
+                            </div>
+                        {% endfor %}
+                    </div>
+                    <button class="carousel-control-prev" type="button" data-bs-target="#roomCarousel" data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon"></span>
+                    </button>
+                    <button class="carousel-control-next" type="button" data-bs-target="#roomCarousel" data-bs-slide="next">
+                        <span class="carousel-control-next-icon"></span>
+                    </button>
+                </div>
+            {% else %}
+                <img src="{{ url_for('static', filename='images/default-room.jpg') }}" class="w-100" alt="Нет фото">
+            {% endif %}
+        </div>
+
+        <div class="col-12">
+            <p>{{ room.description }}</p>
+            <p><strong>Удобства:</strong> {{ room.amenities }}</p>
+            <p><strong>Вместимость:</strong> {{ room.capacity }} человек</p>
+            <p><strong>Цена:</strong> {{ room.price_per_night }} ₽/ночь</p>
+
+            <div class="room-full-details d-none mt-3">
+                <p><strong>Дополнительные удобства:</strong> Бесплатный Wi-Fi, Кондиционер, Минибар, Телевизор</p>
+                <p><strong>Отзывы:</strong> Отличный номер, чисто и комфортно!</p>
+                <p><strong>Маршрут:</strong> 5 минут пешком до пляжа, рядом кафе и магазины.</p>
+            </div>
+            <button id="expandDetailsBtn" class="btn btn-link p-0 mt-2">Подробнее</button>
+        </div>
+    </div>
+</div>
+<div class="modal-footer">
+    {% if is_available %}
+        <a href="{{ url_for('booking.book_room', room_id=room.id, check_in=check_in, check_out=check_out, guests=guests) }}"
+           class="btn btn-primary">Выбрать</a>
+    {% else %}
+        <button class="btn btn-secondary">Оставить заявку</button>
+    {% endif %}
+</div>

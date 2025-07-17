@@ -21,15 +21,12 @@ def main():
 def register():
     form = RegisterForm()
     if form.validate_on_submit():
-        if form.password.data != form.password_again.data:
-            flash("Пароли не совпадают", "danger")
-            return render_template("register.html", form=form)
 
         try:
             data = {
                 "email": form.email.data,
                 "phone": form.phone.data,
-                "password_hash": form.password.data,
+                "password": form.password.data,
                 "surname": form.surname.data,
                 "name": form.name.data,
                 "birth_date": form.birth_date.data,
@@ -37,13 +34,13 @@ def register():
                 "role": "user",
                 "is_verified": False,
             }
-            user = UserService.register_user(data)
+            user = UserService.create_user(data)
             flash("Регистрация прошла успешно", "success")
-            return redirect('/login')
+            return redirect('/auth/login')
         except Exception as e:
             flash(str(e), "danger")
 
-    return render_template("register.html", form=form)
+    return render_template("auth/register.html", form=form)
 
 
 @user_blueprint.route('/auth/login', methods=['GET', 'POST'])
@@ -54,21 +51,15 @@ def login():
         password = form.password.data
 
         try:
-            user_dict = UserService.authenticate_user(identifier, password)
-            with create_session() as session:
-                user_obj = session.get(User, user_dict["id"])
-
-            if user_obj:
-                login_user(user_obj, remember=form.remember_me.data)
-                flash("Успешный вход", "success")
-                return redirect("/")
-            else:
-                flash("Ошибка при загрузке пользователя", "danger")
+            user = UserService.authenticate_user(identifier, password)
+            login_user(user, remember=form.remember_me.data)
+            flash("Успешный вход", "success")
+            return redirect("/")
 
         except Exception as e:
             flash(str(e), "danger")
 
-    return render_template("login.html", form=form)
+    return render_template("auth/login.html", form=form)
 
 
 @user_blueprint.route('/logout')
@@ -76,7 +67,7 @@ def login():
 def logout():
     logout_user()
     flash("Вы вышли из аккаунта", "info")
-    return redirect('/login')
+    return redirect('/auth/login')
 
 
 @user_blueprint.route('/profile')
@@ -86,6 +77,6 @@ def profile():
 
 
 @user_blueprint.route('/admin')
-@role_required('admin')  # Только для админа
+@role_required('admin')
 def admin_dashboard():
     return render_template("admin_dashboard.html")
